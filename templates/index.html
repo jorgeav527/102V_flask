@@ -1,11 +1,223 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Panel Administrativo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+
+        body { display: flex; min-height: 100vh; background: #f0f2f5; }
+
+        /* ---- Sidebar ---- */
+        .sidebar {
+            width: 240px; background: #1a1d29; color: #c0c4d1;
+            display: flex; flex-direction: column; padding: 24px 16px; flex-shrink: 0;
+        }
+        .sidebar h2 { color: #fff; font-size: 18px; margin-bottom: 32px; letter-spacing: 0.5px; }
+        .sidebar nav { display: flex; flex-direction: column; gap: 4px; }
+        .sidebar a {
+            color: #c0c4d1; text-decoration: none; padding: 10px 14px;
+            border-radius: 8px; font-size: 14px; display: flex; align-items: center; gap: 10px;
+            transition: 0.15s;
+        }
+        .sidebar a:hover { background: #2a2e3a; color: #fff; }
+        .sidebar a.active { background: #4f6ef7; color: #fff; }
+
+        /* ---- Main ---- */
+        .main { flex: 1; padding: 28px 32px; overflow-y: auto; }
+
+        /* ---- Header ---- */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 28px;
+        }
+        .header h1 { font-size: 24px; color: #1a1d29; font-weight: 600; }
+        .header .admin-badge {
+            display: flex; align-items: center; gap: 10px;
+            background: #fff; padding: 8px 16px 8px 12px; border-radius: 40px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06);
+        }
+        .header .avatar {
+            width: 34px; height: 34px; border-radius: 50%;
+            background: linear-gradient(135deg,#4f6ef7,#7c5cfc);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: 600; font-size: 14px;
+        }
+
+        /* ---- Stats cards ---- */
+        .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-bottom: 28px; }
+        .stat-card {
+            background: #fff; border-radius: 12px; padding: 20px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.05);
+        }
+        .stat-card .label { font-size: 13px; color: #8e94a7; margin-bottom: 6px; }
+        .stat-card .value { font-size: 26px; font-weight: 700; color: #1a1d29; }
+        .stat-card .change { font-size: 12px; margin-top: 6px; }
+        .stat-card .change.up { color: #22b573; }
+        .stat-card .change.down { color: #e4565a; }
+
+        /* ---- Charts row ---- */
+        .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+        .chart-card {
+            background: #fff; border-radius: 12px; padding: 22px 24px 26px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.05);
+        }
+        .chart-card h3 { font-size: 16px; color: #1a1d29; margin-bottom: 20px; font-weight: 600; }
+
+        /* ---- Bar chart (CSS only) ---- */
+        .bar-chart { display: flex; align-items: flex-end; gap: 12px; height: 200px; padding-top: 8px; }
+        .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+        .bar {
+            width: 100%; max-width: 44px; border-radius: 6px 6px 2px 2px;
+            transition: 0.2s; position: relative;
+        }
+        .bar:hover { opacity: .75; }
+        .bar .tooltip {
+            position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
+            background: #1a1d29; color: #fff; font-size: 11px; padding: 2px 8px;
+            border-radius: 4px; white-space: nowrap; opacity: 0; transition: 0.15s;
+        }
+        .bar:hover .tooltip { opacity: 1; }
+        .bar-label { margin-top: 10px; font-size: 11px; color: #8e94a7; }
+
+        /* ---- Donut chart (CSS conic-gradient) ---- */
+        .donut-wrap { display: flex; align-items: center; gap: 32px; }
+        .donut {
+            width: 140px; height: 140px; border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .legend { display: flex; flex-direction: column; gap: 10px; }
+        .legend-item { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #3a3f4e; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
+    </style>
 </head>
 <body>
-    <p>hola con todos</p>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+    <h2>AdminPanel</h2>
+    <nav>
+        <a href="#" class="active">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Dashboard
+        </a>
+        <a href="#">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Usuarios
+        </a>
+        <a href="#">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            Reportes
+        </a>
+        <a href="#">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Configuración
+        </a>
+    </nav>
+</aside>
+
+<!-- Main -->
+<main class="main">
+    <!-- Header -->
+    <div class="header">
+        <h1>Dashboard</h1>
+        <div class="admin-badge">
+            <div class="avatar">AD</div>
+            <span style="font-size:14px;font-weight:500;color:#1a1d29;">Admin</span>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <section class="stats">
+        <div class="stat-card">
+            <div class="label">Usuarios</div>
+            <div class="value">1,482</div>
+            <div class="change up">+12% este mes</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Ventas</div>
+            <div class="value">$28.4k</div>
+            <div class="change up">+8.3% este mes</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Pedidos</div>
+            <div class="value">347</div>
+            <div class="change down">-3.1% este mes</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Ingresos</div>
+            <div class="value">$12.8k</div>
+            <div class="change up">+5.7% este mes</div>
+        </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="charts">
+        <!-- Bar chart -->
+        <div class="chart-card">
+            <h3>Ventas por mes</h3>
+            <div class="bar-chart">
+                <div class="bar-group">
+                    <div class="bar" style="height:52%;background:linear-gradient(to top,#4f6ef7,#7c5cfc);">
+                        <span class="tooltip">$18.2k</span>
+                    </div>
+                    <span class="bar-label">Ene</span>
+                </div>
+                <div class="bar-group">
+                    <div class="bar" style="height:38%;background:linear-gradient(to top,#4f6ef7,#7c5cfc);">
+                        <span class="tooltip">$13.5k</span>
+                    </div>
+                    <span class="bar-label">Feb</span>
+                </div>
+                <div class="bar-group">
+                    <div class="bar" style="height:64%;background:linear-gradient(to top,#4f6ef7,#7c5cfc);">
+                        <span class="tooltip">$22.8k</span>
+                    </div>
+                    <span class="bar-label">Mar</span>
+                </div>
+                <div class="bar-group">
+                    <div class="bar" style="height:45%;background:linear-gradient(to top,#4f6ef7,#7c5cfc);">
+                        <span class="tooltip">$16.1k</span>
+                    </div>
+                    <span class="bar-label">Abr</span>
+                </div>
+                <div class="bar-group">
+                    <div class="bar" style="height:78%;background:linear-gradient(to top,#4f6ef7,#7c5cfc);">
+                        <span class="tooltip">$28.4k</span>
+                    </div>
+                    <span class="bar-label">May</span>
+                </div>
+                <div class="bar-group">
+                    <div class="bar" style="height:56%;background:linear-gradient(to top,#4f6ef7,#7c5cfc);">
+                        <span class="tooltip">$20.0k</span>
+                    </div>
+                    <span class="bar-label">Jun</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Donut chart -->
+        <div class="chart-card">
+            <h3>Categorías</h3>
+            <div class="donut-wrap">
+                <div class="donut" style="background: conic-gradient(
+                    #4f6ef7 0% 40%,
+                    #22b573 40% 65%,
+                    #f5a623 65% 85%,
+                    #e4565a 85% 100%
+                );"></div>
+                <div class="legend">
+                    <div class="legend-item"><span class="legend-dot" style="background:#4f6ef7;"></span> Electrónicos 40%</div>
+                    <div class="legend-item"><span class="legend-dot" style="background:#22b573;"></span> Ropa 25%</div>
+                    <div class="legend-item"><span class="legend-dot" style="background:#f5a623;"></span> Hogar 20%</div>
+                    <div class="legend-item"><span class="legend-dot" style="background:#e4565a;"></span> Otros 15%</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
 </body>
 </html>
