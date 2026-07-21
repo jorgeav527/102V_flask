@@ -6,8 +6,9 @@
     <title>Document</title>
 </head>
 <body>
+    {{ posts_list }}
     {% for row in posts_list %}
-        <p>{{ row["id"] }}</p>
+        <p>{{ row["title"] }}</p>
     {% endfor %}
 </body>
 </html>
