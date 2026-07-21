@@ -55,3 +55,23 @@ def create_one_post():
         conn.commit()
         conn.close()
         return redirect(url_for('get_all_post'))
+
+
+@app.route ('/post/edit/<int:post_id>', methods= ['GET', 'POST'])
+def edit_one_post(post_id):
+    if request.method == "GET":
+        conn = get_db_connection()
+        post_data = conn.execute('SELECT * FROM posts WHERE id = ?', (post_id,)).fetchone()
+        conn.close()
+        if post_data is None:
+            abort(404)
+        return render_template('post/edit.html', post=post_data)
+    if request.method == "POST":
+        title = request.form['title']
+        content = request.form['content']
+        conn = get_db_connection()
+        conn.execute('UPDATE posts SET title = ?, content = ? WHERE id = ?', (title, content, post_id))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('get_all_post'))
+    
