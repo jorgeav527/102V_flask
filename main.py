@@ -75,3 +75,15 @@ def edit_one_post(post_id):
         conn.close()
         return redirect(url_for('get_all_post'))
     
+
+@app.route('/post/delete/<int:post_id>', methods=['POST'])
+def delete_one_post(post_id):
+    conn = get_db_connection()
+    post_data = conn.execute('SELECT * FROM posts WHERE id = ?', (post_id,)).fetchone()
+    if post_data is None:
+        conn.close()
+        abort(404)
+    conn.execute('DELETE FROM posts WHERE id = ?', (post_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('get_all_post'))
