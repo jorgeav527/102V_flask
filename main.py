@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, request, redirect, url_for, abort
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,32 +10,48 @@ DB_URL = os.getenv("DATABASE_URL")
 
 app = Flask(__name__)
 
-def get_db():
-    db = sqlite3.connect(DB_URL)
-    db.row_factory = sqlite3.Row
-    return db
+def get_db_connection():
+    conn = sqlite3.connect(DB_URL)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 @app.route("/", methods=['GET'])
-def home():
+def root():
     return render_template("base.html")
 
 
-@app.route("/texto", methods=['GET'])
-def text():
-    return "hola con todos"
-
-@app.route("/posts", methods=['GET'])
-def list_posts():
-    connection = get_db()
-    posts_data = connection.execute("SELECT * FROM posts").fetchall()
-    connection.close()
-    return render_template("index.html", posts_list=posts_data)
+@app.route("/home", methods=['GET'])
+def home():
+    return render_template("home.html")
 
 
-@app.route("/api/posts", methods=['GET'])
-def list_posts_json():
-    connection = get_db()
-    posts_data = connection.execute("SELECT * FROM posts").fetchall()
-    connection.close()
-    print("posts_data", posts_data)
-    return jsonify(posts_data)
+@app.route('/posts', methods=['GET'])
+def get_all_post():
+    conn = get_db_connection()
+    posts_data = conn.execute('SELECT * FROM posts').fetchall()
+    conn.close()
+    return render_template("post/list_post.html", posts=posts_data)
+
+
+@app.route('/post/<int:post_id>', methods=['GET'])
+def get_one_post(post_id):
+    conn = get_db_connection()
+    post_data = conn.execute('SELECT * FROM posts WHERE id = ?', (post_id,)).fetchone()
+    conn.close()
+    if post_data is None:
+        abort(404)
+    return render_template('post/post.html', post=post_data)
+
+
+@app.route ('/post/create', methods= ['GET', 'POST'])
+def create_one_post():
+    if request.method == "GET":
+        return render_template('post/create.html')
+    if request.method == "POST":
+        title = request.form['title']
+        content = request.form['content']
+        conn = get_db_connection()
+        conn.execute('INSERT INTO posts (title, content) VALUES (?, ?)', (title, content))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('get_all_post'))
